@@ -1,61 +1,596 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PayCalc</title>
-    <style>
-        /* Root styles for both themes */
-        :root {
-            --background-color-light: #ffffff;
-            --text-color-light: #333333;
-            --primary-color-light: #4CAF50;
-            --shadow-light: rgba(0, 0, 0, 0.1);
-            --gradient-light: linear-gradient(to bottom, #ffffff, #f1f1f1);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pay Check">
+<title>JWood Pay Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --border: rgba(255,255,255,0.07);
+    --accent: #c8f564;
+    --accent-dim: rgba(200,245,100,0.12);
+    --red: #ff6b6b;
+    --red-dim: rgba(255,107,107,0.1);
+    --text: #f0f0f0;
+    --muted: #666;
+    --sub: #999;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --background-color-dark: #121212;
-                --text-color-dark: #f1f1f1;
-                --primary-color-dark: #5EBA7F;
-                --shadow-dark: rgba(0, 0, 0, 0.7);
-                --gradient-dark: linear-gradient(to bottom, #121212, #1d1d1d);
-            }
-        }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
-        body {
-            background-color: var(--background-color-light);
-            color: var(--text-color-light);
-            transition: background-color 0.5s, color 0.5s;
-            background-image: var(--gradient-light);
-            box-shadow: 0 4px 10px var(--shadow-light);
-        }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
 
-        @media (prefers-color-scheme: dark) {
-            body {
-                background-color: var(--background-color-dark);
-                color: var(--text-color-dark);
-                background-image: var(--gradient-dark);
-                box-shadow: 0 4px 10px var(--shadow-dark);
-            }
-        }
+  header {
+    padding: 52px 20px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
 
-        h1 {
-            color: var(--primary-color-light);
-        }
+  header .eyebrow {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
 
-        @media (prefers-color-scheme: dark) {
-            h1 {
-                color: var(--primary-color-dark);
-            }
-        }
+  header h1 {
+    font-family: var(--font-head);
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1;
+  }
 
-    </style>
+  header .rate-badge {
+    display: inline-block;
+    margin-top: 8px;
+    background: var(--accent-dim);
+    color: var(--accent);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid rgba(200,245,100,0.2);
+  }
+
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 13px 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .panel { display: none; padding: 20px; }
+  .panel.active { display: block; }
+
+  .net-hero {
+    background: var(--accent-dim);
+    border: 1px solid rgba(200,245,100,0.25);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .net-hero .label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .net-hero .amount {
+    font-family: var(--font-head);
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .net-hero .sub {
+    font-size: 12px;
+    color: var(--sub);
+    margin-top: 6px;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .stat .s-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+
+  .stat .s-val {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .stat .s-val.red { color: var(--red); }
+
+  .slider-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+
+  .slider-block .s-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .slider-block .s-name {
+    font-size: 12px;
+    color: var(--sub);
+    letter-spacing: 0.05em;
+  }
+
+  .slider-block .s-num {
+    font-family: var(--font-head);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .slider-block .s-earn {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 0 4px rgba(200,245,100,0.15);
+  }
+
+  .breakdown {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .breakdown-head {
+    padding: 12px 16px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .b-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .b-row:last-child { border-bottom: none; }
+
+  .b-row .b-label { color: var(--sub); }
+  .b-row .b-val { font-weight: 500; color: var(--text); }
+  .b-row .b-val.red { color: var(--red); }
+  .b-row .b-val.green { color: var(--accent); }
+  .b-row.total { background: var(--surface2); }
+  .b-row.total .b-label { color: var(--text); font-weight: 500; }
+
+  .divider-row {
+    height: 1px;
+    background: rgba(200,245,100,0.15);
+    margin: 0;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin: 20px 0 10px;
+  }
+
+  .history-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .h-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .h-row:last-child { border-bottom: none; }
+  .h-row .period { color: var(--sub); font-size: 12px; }
+  .h-row .hrs { color: var(--muted); font-size: 12px; }
+  .h-row .net { color: var(--accent); font-weight: 500; }
+  .h-row.avg-row { background: var(--surface2); }
+  .h-row.avg-row .period { color: var(--text); font-weight: 500; }
+
+  .ann-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .ann-hero .a-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .ann-hero .a-val {
+    font-family: var(--font-head);
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .ann-hero .a-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .ann-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .ann-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .ann-stat .al { font-size: 10px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; }
+  .ann-stat .av { font-size: 17px; font-weight: 500; color: var(--text); }
+  .ann-stat .av.red { color: var(--red); }
+
+  footer {
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    padding: 20px;
+    letter-spacing: 0.1em;
+  }
+</style>
 </head>
 <body>
-    <h1>Welcome to PayCalc</h1>
-    <p>Use this calculator to pay your bills easily.</p>
-    <!-- Add your calculator structure here -->
+
+<header>
+  <div class="eyebrow">Georgia Tech — Institute for Matter & Systems</div>
+  <h1>Paycheck<br>Calculator</h1>
+  <span class="rate-badge">$23.92 / hr · Bi-weekly</span>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="setTab(0)">Predict</button>
+  <button class="tab" onclick="setTab(1)">Annual</button>
+  <button class="tab" onclick="setTab(2)">History</button>
+</div>
+
+<div class="panel active" id="panel-0">
+  <div class="net-hero">
+    <div class="label">Estimated net pay</div>
+    <div class="amount" id="hero-net">—</div>
+    <div class="sub" id="hero-sub">Set your hours below</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat">
+      <div class="s-label">Gross pay</div>
+      <div class="s-val" id="s-gross">—</div>
+    </div>
+    <div class="stat">
+      <div class="s-label">Total deducted</div>
+      <div class="s-val red" id="s-ded">—</div>
+    </div>
+  </div>
+
+  <div class="slider-block">
+    <div class="s-top">
+      <span class="s-name">Regular hours</span>
+      <div style="text-align:right;">
+        <div class="s-num" id="reg-num">80</div>
+        <div class="s-earn" id="reg-earn">$1,913.60</div>
+      </div>
+    </div>
+    <input type="range" min="0" max="80" step="1" value="80" id="reg-hrs" oninput="calc()">
+  </div>
+
+  <div class="slider-block">
+    <div class="s-top">
+      <span class="s-name">Sick / vacation hrs</span>
+      <div style="text-align:right;">
+        <div class="s-num" id="sv-num">0</div>
+        <div class="s-earn" id="sv-earn">$0.00</div>
+      </div>
+    </div>
+    <input type="range" min="0" max="40" step="1" value="0" id="sv-hrs" oninput="calc()">
+  </div>
+
+  <div class="slider-block">
+    <div class="s-top">
+      <span class="s-name">Holiday hours</span>
+      <div style="text-align:right;">
+        <div class="s-num" id="hol-num">0</div>
+        <div class="s-earn" id="hol-earn">$0.00</div>
+      </div>
+    </div>
+    <input type="range" min="0" max="48" step="8" value="0" id="hol-hrs" oninput="calc()">
+  </div>
+
+  <div class="section-label">Full breakdown</div>
+  <div class="breakdown">
+    <div class="breakdown-head">Earnings</div>
+    <div class="b-row"><span class="b-label">Regular pay</span><span class="b-val" id="b-reg">—</span></div>
+    <div class="b-row"><span class="b-label">Sick / vac / holiday</span><span class="b-val" id="b-sv">—</span></div>
+    <div class="b-row total"><span class="b-label">Gross</span><span class="b-val" id="b-gross">—</span></div>
+    <div class="breakdown-head" style="border-top:1px solid var(--border);">Before-tax deductions</div>
+    <div class="b-row"><span class="b-label">TRS retirement</span><span class="b-val red" id="b-trs">—</span></div>
+    <div class="b-row"><span class="b-label">Kaiser HMO</span><span class="b-val red">-$109.25</span></div>
+    <div class="b-row"><span class="b-label">Dental</span><span class="b-val red">-$19.36</span></div>
+    <div class="b-row"><span class="b-label">Vision</span><span class="b-val red">-$3.45</span></div>
+    <div class="b-row"><span class="b-label">Parking</span><span class="b-val red">-$39.75</span></div>
+    <div class="b-row" style="background:var(--surface2);"><span class="b-label" style="font-size:11px;">Fed taxable gross</span><span class="b-val" style="font-size:12px;color:var(--muted);" id="b-taxable">—</span></div>
+    <div class="breakdown-head" style="border-top:1px solid var(--border);">Taxes</div>
+    <div class="b-row"><span class="b-label">Fed withholding</span><span class="b-val red" id="b-fedw">—</span></div>
+    <div class="b-row"><span class="b-label">GA withholding</span><span class="b-val red" id="b-gaw">—</span></div>
+    <div class="b-row"><span class="b-label">Social Security</span><span class="b-val red" id="b-ss">—</span></div>
+    <div class="b-row"><span class="b-label">Medicare</span><span class="b-val red" id="b-med">—</span></div>
+    <div class="breakdown-head" style="border-top:1px solid var(--border);">After-tax</div>
+    <div class="b-row"><span class="b-label">Long-term disability</span><span class="b-val red">-$5.51</span></div>
+    <div class="divider-row"></div>
+    <div class="b-row total"><span class="b-label">Net pay</span><span class="b-val green" id="b-net">—</span></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-1">
+  <div class="section-label">Avg regular hours per period</div>
+  <div class="slider-block">
+    <div class="s-top">
+      <span class="s-name">Hours / period</span>
+      <div class="s-num" id="avg-num">72</div>
+    </div>
+    <input type="range" min="40" max="80" step="1" value="72" id="avg-hrs" oninput="calcAnnual()">
+  </div>
+
+  <div class="ann-hero">
+    <div class="a-label">Projected annual net</div>
+    <div class="a-val" id="ann-net">—</div>
+    <div class="a-sub">across 26 pay periods</div>
+  </div>
+
+  <div class="ann-grid">
+    <div class="ann-stat"><div class="al">Annual gross</div><div class="av" id="ann-gross">—</div></div>
+    <div class="ann-stat"><div class="al">Annual deducted</div><div class="av red" id="ann-ded">—</div></div>
+    <div class="ann-stat"><div class="al">Net per period</div><div class="av" id="ann-npp">—</div></div>
+    <div class="ann-stat"><div class="al">Deduction rate</div><div class="av" id="ann-etr">—</div></div>
+  </div>
+
+  <div class="breakdown">
+    <div class="b-row"><span class="b-label">Gross / period</span><span class="b-val" id="ann-gpp">—</span></div>
+    <div class="b-row"><span class="b-label">Deductions / period</span><span class="b-val red" id="ann-dpp">—</span></div>
+    <div class="b-row total"><span class="b-label">Net / period</span><span class="b-val green" id="ann-npp2">—</span></div>
+    <div class="b-row total"><span class="b-label">Annual gross</span><span class="b-val" id="ann-ag2">—</span></div>
+    <div class="b-row total"><span class="b-label">Annual net</span><span class="b-val green" id="ann-an2">—</span></div>
+  </div>
+</div>
+
+<div class="panel" id="panel-2">
+  <div class="section-label">Your 7 pay periods</div>
+  <div class="history-card">
+    <div class="h-row">
+      <div><div class="period">12/21 – 01/03</div><div class="hrs">88 hrs</div></div>
+      <div style="text-align:right;"><div style="font-size:12px;color:var(--sub);">$2,104.96</div><div class="net">$1,445.21</div></div>
+    </div>
+    <div class="h-row">
+      <div><div class="period">01/04 – 01/17</div><div class="hrs">80 hrs</div></div>
+      <div style="text-align:right;"><div style="font-size:12px;color:var(--sub);">$1,913.60</div><div class="net">$1,316.33</div></div>
+    </div>
+    <div class="h-row">
+      <div><div class="period">01/18 – 01/31</div><div class="hrs">64 hrs</div></div>
+      <div style="text-align:right;"><div style="font-size:12px;color:var(--sub);">$1,530.88</div><div class="net">$1,047.71</div></div>
+    </div>
+    <div class="h-row">
+      <div><div class="period">02/01 – 02/14</div><div class="hrs">70 hrs</div></div>
+      <div style="text-align:right;"><div style="font-size:12px;color:var(--sub);">$1,674.40</div><div class="net">$1,148.44</div></div>
+    </div>
+    <div class="h-row">
+      <div><div class="period">02/15 – 02/28</div><div class="hrs">80 hrs</div></div>
+      <div style="text-align:right;"><div style="font-size:12px;color:var(--sub);">$1,913.60</div><div class="net">$1,316.33</div></div>
+    </div>
+    <div class="h-row">
+      <div><div class="period">03/01 – 03/14</div><div class="hrs">55.4 hrs</div></div>
+      <div style="text-align:right;"><div style="font-size:12px;color:var(--sub);">$1,325.17</div><div class="net">$902.87</div></div>
+    </div>
+    <div class="h-row">
+      <div><div class="period">03/15 – 03/28</div><div class="hrs">72 hrs</div></div>
+      <div style="text-align:right;"><div style="font-size:12px;color:var(--sub);">$1,722.24</div><div class="net">$1,182.02</div></div>
+    </div>
+    <div class="h-row avg-row">
+      <div><div class="period">Average</div><div class="hrs">72.8 hrs</div></div>
+      <div style="text-align:right;"><div style="font-size:12px;color:var(--sub);">$1,740.69</div><div class="net">$1,194.13</div></div>
+    </div>
+  </div>
+
+  <div class="ann-grid">
+    <div class="ann-stat"><div class="al">Pay rate</div><div class="av">$23.92/hr</div></div>
+    <div class="ann-stat"><div class="al">Fixed benefits</div><div class="av red">$177.32</div></div>
+    <div class="ann-stat"><div class="al">Avg keep rate</div><div class="av">68.6%</div></div>
+    <div class="ann-stat"><div class="al">YTD net (2026)</div><div class="av">$8,358.91</div></div>
+  </div>
+</div>
+
+<footer>JWood · GT Pay Calculator · Rates locked to your actual stubs</footer>
+
+<script>
+const RATE = 23.92;
+const FIXED_BEFORE = 109.25 + 19.36 + 3.45 + 39.75;
+const LTD = 5.51;
+const STUB_GROSS   = 1913.60;
+const STUB_TAXABLE = 1626.97;
+const TRS_RATE = 114.82 / STUB_GROSS;
+const FED_RATE = 111.39 / STUB_TAXABLE;
+const GA_RATE  = 60.49  / STUB_TAXABLE;
+const SS_RATE  = 107.99 / STUB_GROSS;
+const MED_RATE = 25.26  / STUB_GROSS;
+
+function fmt(n) { return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,','); }
+function fmtK(n) { return n >= 1000 ? '$' + (n/1000).toFixed(1) + 'k' : fmt(n); }
+
+function calcAll(reg, sv, hol) {
+  const gross      = (reg + sv + hol) * RATE;
+  const trs        = gross * TRS_RATE;
+  const fedTaxable = gross - trs - FIXED_BEFORE;
+  const fw         = fedTaxable * FED_RATE;
+  const gw         = fedTaxable * GA_RATE;
+  const ss         = gross * SS_RATE;
+  const med        = gross * MED_RATE;
+  const totalDed   = trs + FIXED_BEFORE + fw + gw + ss + med + LTD;
+  return { gross, trs, fedTaxable, fw, gw, ss, med, totalDed, net: gross - totalDed,
+    regPay: reg*RATE, otherPay: (sv+hol)*RATE };
+}
+
+function calc() {
+  const reg = +document.getElementById('reg-hrs').value;
+  const sv  = +document.getElementById('sv-hrs').value;
+  const hol = +document.getElementById('hol-hrs').value;
+  document.getElementById('reg-num').textContent  = reg;
+  document.getElementById('sv-num').textContent   = sv;
+  document.getElementById('hol-num').textContent  = hol;
+  document.getElementById('reg-earn').textContent = fmt(reg * RATE);
+  document.getElementById('sv-earn').textContent  = fmt(sv * RATE);
+  document.getElementById('hol-earn').textContent = fmt(hol * RATE);
+  const p = calcAll(reg, sv, hol);
+  document.getElementById('hero-net').textContent  = fmt(p.net);
+  document.getElementById('hero-sub').textContent  = `from ${reg+sv+hol} total hours · gross ${fmt(p.gross)}`;
+  document.getElementById('s-gross').textContent   = fmt(p.gross);
+  document.getElementById('s-ded').textContent     = fmt(p.totalDed);
+  document.getElementById('b-reg').textContent     = fmt(p.regPay);
+  document.getElementById('b-sv').textContent      = fmt(p.otherPay);
+  document.getElementById('b-gross').textContent   = fmt(p.gross);
+  document.getElementById('b-trs').textContent     = '-' + fmt(p.trs);
+  document.getElementById('b-taxable').textContent = fmt(p.fedTaxable);
+  document.getElementById('b-fedw').textContent    = '-' + fmt(p.fw);
+  document.getElementById('b-gaw').textContent     = '-' + fmt(p.gw);
+  document.getElementById('b-ss').textContent      = '-' + fmt(p.ss);
+  document.getElementById('b-med').textContent     = '-' + fmt(p.med);
+  document.getElementById('b-net').textContent     = fmt(p.net);
+}
+
+function calcAnnual() {
+  const avg = +document.getElementById('avg-hrs').value;
+  document.getElementById('avg-num').textContent = avg;
+  const p  = calcAll(avg, 0, 0);
+  const ag = p.gross * 26;
+  const an = p.net   * 26;
+  const etr = ((p.totalDed / p.gross) * 100).toFixed(1) + '%';
+  document.getElementById('ann-net').textContent   = fmt(an);
+  document.getElementById('ann-gross').textContent = fmt(ag);
+  document.getElementById('ann-ded').textContent   = fmt(p.totalDed * 26);
+  document.getElementById('ann-npp').textContent   = fmt(p.net);
+  document.getElementById('ann-etr').textContent   = etr;
+  document.getElementById('ann-gpp').textContent   = fmt(p.gross);
+  document.getElementById('ann-dpp').textContent   = fmt(p.totalDed);
+  document.getElementById('ann-npp2').textContent  = fmt(p.net);
+  document.getElementById('ann-ag2').textContent   = fmt(ag);
+  document.getElementById('ann-an2').textContent   = fmt(an);
+}
+
+function setTab(i) {
+  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
+  document.querySelectorAll('.panel').forEach((p,j) => p.classList.toggle('active', i===j));
+  if (i === 1) calcAnnual();
+}
+
+calc();
+</script>
 </body>
 </html>
